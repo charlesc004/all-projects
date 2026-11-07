@@ -1,0 +1,12 @@
+name: sentinelml-rust-tests
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment: {POSTGRES_PASSWORD: sentinel-rust-test-only, POSTGRES_DB: sentinel_rust_test}
+    healthcheck: {test: [CMD-SHELL, "pg_isready -U postgres"], interval: 2s, timeout: 3s, retries: 30}
+  tests:
+    image: sentinelml-inference-test-runner:latest
+    environment:
+      TEST_DATABASE_URL: postgres://postgres:sentinel-rust-test-only@postgres/sentinel_rust_test
+    command: [/build-artifacts/inference-tests, --ignored, --test-threads=1, --nocapture]
+    depends_on: {postgres: {condition: service_healthy}}

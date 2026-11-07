@@ -1,0 +1,957 @@
+openapi: 3.1.0
+info:
+  title: SentinelML API
+  version: 0.1.0
+  description: >-
+    Synthetic fraud intelligence. Ingestion is durable asynchronous acceptance; scoring appears later through
+    the control-plane API.
+servers:
+  - url: http://localhost:8080
+paths:
+  /ingest/v1/transactions:
+    post:
+      summary: Durably accept a tokenized transaction
+      security:
+        - IngestionKey: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+        - in: header
+          name: X-Correlation-ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "202":
+          description: >-
+            Transaction and outbox record committed. Returns transaction_id, duplicate, status and
+            correlation_id.
+        "400":
+          description: Invalid JSON or idempotency key
+        "401":
+          description: Invalid or revoked ingestion key
+        "409":
+          description: Idempotency key reused with a different normalized payload
+        "422":
+          description: Feature value outside supported range
+        "429":
+          description: Rate limit exceeded
+        "503":
+          description: Transaction not accepted because a dependency is unavailable
+  /ingest/v1/transactions/{id}:
+    get:
+      summary: Retrieve a tenant-owned accepted transaction
+      security:
+        - IngestionKey: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Public transaction DTO
+        "404":
+          description: Unknown or inaccessible transaction
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+  /ingest/v1/ingestion/stats:
+    get:
+      security:
+        - IngestionKey: []
+      summary: Tenant accepted transaction count
+      responses:
+        "200":
+          description: Accepted count
+  /api/auth/session:
+    get:
+      summary: Fetch session user and CSRF token
+      responses:
+        "200":
+          description: User DTO or null, csrf_token and demo_enabled.
+  /api/auth/login:
+    post:
+      summary: Start an HttpOnly cookie session
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Session user and refreshed CSRF token
+        "401":
+          description: Invalid credentials
+        "429":
+          description: Too many attempts
+  /api/auth/logout:
+    delete:
+      summary: Reset the current session
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "204":
+          description: Signed out
+  /api/dashboard:
+    get:
+      security:
+        - Session: []
+      summary: Tenant KPI counts, 14-day trend, risk distribution, recent alerts, and active model metadata
+      responses:
+        "200":
+          description: Aggregation of persisted records
+  /api/transactions:
+    get:
+      security:
+        - Session: []
+      summary: Search scored transaction projections
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: risk_level
+          schema:
+            enum:
+              - low
+              - medium
+              - high
+              - critical
+        - in: query
+          name: sort
+          schema:
+            enum:
+              - created_at
+              - risk_score
+        - in: query
+          name: direction
+          schema:
+            enum:
+              - asc
+              - desc
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Paginated assessment DTOs
+        "401":
+          description: Login required
+  /api/alerts:
+    get:
+      security:
+        - Session: []
+      summary: Paginated tenant alert queue
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Page"
+      responses:
+        "200":
+          description: Alert DTOs including assessment and matched policy
+  /api/alerts/{id}:
+    patch:
+      security:
+        - Session: []
+      summary: Update alert status (admin, analyst or risk manager)
+      parameters:
+        - $ref: "#/components/parameters/ID"
+        - $ref: "#/components/parameters/CSRF"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+                - lock_version
+              properties:
+                status:
+                  enum:
+                    - new
+                    - acknowledged
+                    - investigating
+                    - escalated
+                    - resolved
+                    - dismissed
+                lock_version:
+                  type: integer
+      responses:
+        "200":
+          description: Updated alert
+        "403":
+          description: Read-only role
+        "409":
+          description: Stale lock_version
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+  /api/cases:
+    get:
+      security:
+        - Session: []
+      summary: Paginated tenant investigations
+      parameters:
+        - $ref: "#/components/parameters/Page"
+      responses:
+        "200":
+          description: Case DTOs
+  /api/cases/{id}:
+    get:
+      security:
+        - Session: []
+      summary: Investigation detail
+      parameters:
+        - $ref: "#/components/parameters/ID"
+      responses:
+        "200":
+          description: Case details, assignment and alert evidence.
+        "404":
+          description: Unknown or inaccessible case
+    patch:
+      security:
+        - Session: []
+      summary: Record notes, assignment, status and reviewed outcome
+      parameters:
+        - $ref: "#/components/parameters/ID"
+        - $ref: "#/components/parameters/CSRF"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - lock_version
+              properties:
+                lock_version:
+                  type: integer
+                status:
+                  enum:
+                    - new
+                    - acknowledged
+                    - investigating
+                    - escalated
+                    - resolved
+                    - dismissed
+                note:
+                  type: string
+                  maxLength: 4000
+                assigned_user_id:
+                  type:
+                    - string
+                    - "null"
+                  format: uuid
+                outcome:
+                  enum:
+                    - confirmed_fraud
+                    - false_positive
+                    - legitimate_transaction
+                    - inconclusive
+      responses:
+        "200":
+          description: Updated case and persisted feedback when an outcome is provided
+        "409":
+          description: Stale lock_version
+        "422":
+          description: Invalid status, outcome or assignee.
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+  /api/policies:
+    get:
+      security:
+        - Session: []
+      summary: List tenant policies
+      responses:
+        "200":
+          description: Policy DTOs
+    post:
+      security:
+        - Session: []
+      summary: Create policy (admin or risk manager)
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Policy"
+      responses:
+        "201":
+          description: Policy created
+        "403":
+          description: Permission denied
+        "422":
+          description: Invalid DSL
+  /api/models:
+    get:
+      security:
+        - Session: []
+      summary: Read model manifests and actual offline evaluation metrics
+      responses:
+        "200":
+          description: Model registry DTOs
+  /api/feedback:
+    get:
+      security:
+        - Session: []
+      summary: Export up to 1000 tenant-reviewed feedback rows (admin or risk manager)
+      responses:
+        "200":
+          description: Feature snapshots and investigation outcomes
+  /api/audit:
+    get:
+      security:
+        - Session: []
+      summary: Paginated organization audit history
+      responses:
+        "200":
+          description: Audit DTOs
+  /api/settings:
+    get:
+      security:
+        - Session: []
+      summary: Read profile, organization members, integrations and configured retention
+      responses:
+        "200":
+          description: Settings DTO
+  /api/demo/transactions:
+    post:
+      security:
+        - Session: []
+      summary: Submit a synthetic sample through the actual Go ingestion API
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scenario:
+                  enum:
+                    - normal
+                    - suspicious
+      responses:
+        "202":
+          description: Asynchronously accepted transaction
+        "403":
+          description: Demo disabled or role/organization not allowed
+  /api/profile:
+    patch:
+      summary: Update own profile and notification preferences; current password required for email/password changes
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+  /api/organization:
+    patch:
+      summary: Admin updates organization name and retention days (7–3650)
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name:
+                  type: string
+                retention_days:
+                  type: integer
+                  minimum: 7
+                  maximum: 3650
+              required: []
+  /api/members:
+    post:
+      summary: Admin creates an organization member
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "201":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                role:
+                  enum:
+                    - admin
+                    - analyst
+                    - risk_manager
+                    - viewer
+                password:
+                  type: string
+                  minLength: 12
+              required:
+                - name
+                - email
+                - role
+                - password
+  /api/members/{id}:
+    patch:
+      summary: Admin updates role, status or password and revokes affected sessions
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+  /api/credentials:
+    get:
+      summary: Admin lists credential metadata; POST creates or rotates a key and returns credential once
+      security:
+        - Session: []
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+    post:
+      summary: Admin creates or rotates a credential; plaintext is returned once
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "201":
+          description: id, name, prefix and one-time credential
+        "403":
+          description: Permission denied
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 100
+                rotate_id:
+                  type: string
+                  format: uuid
+              required:
+                - name
+  /api/credentials/{id}:
+    patch:
+      summary: Admin revokes a tenant ingestion key
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+  /api/notifications:
+    get:
+      summary: List own notifications and unread count
+      security:
+        - Session: []
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+  /api/notifications/{id}:
+    patch:
+      summary: Mark own notification read
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+  /api/policy-executions:
+    get:
+      summary: Paginated recorded policy results; optional policy_id filter
+      security:
+        - Session: []
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+  /api/monitoring:
+    get:
+      summary: Observed feature PSI and reviewed precision/recall with sample counts
+      security:
+        - Session: []
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+  /api/reports/transactions.csv:
+    get:
+      summary: Export up to 10000 tenant transactions for a maximum 366-day interval
+      security:
+        - Session: []
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+  /api/models/refresh:
+    post:
+      summary: Discover and validate immutable ONNX bundles through Rust
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+  /api/models/{version}/activate:
+    post:
+      summary: Activate or roll back a tenant model using an idempotent command_id UUID
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                command_id:
+                  type: string
+                  format: uuid
+              required:
+                - command_id
+    parameters:
+      - in: path
+        name: version
+        required: true
+        schema:
+          type: string
+  /api/alerts/bulk:
+    patch:
+      summary: Atomically update 1–100 alerts with per-row id and lock_version
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "200":
+          description: Successful tenant-scoped operation
+        "401":
+          description: Authentication required
+        "403":
+          description: Role or CSRF verification denied
+        "422":
+          description: Validation failed
+        "503":
+          description: Dependent service unavailable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                status:
+                  enum:
+                    - new
+                    - acknowledged
+                    - investigating
+                    - escalated
+                    - resolved
+                    - dismissed
+                items:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      lock_version:
+                        type: integer
+                        minimum: 0
+                    required:
+                      - id
+                      - lock_version
+              required:
+                - status
+                - items
+  /api/policies/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      summary: Update tenant policy with optimistic lock_version; admin or risk manager only
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "200":
+          description: Updated policy
+        "403":
+          description: Permission denied
+        "409":
+          description: Stale policy version
+  /api/auth/demo:
+    post:
+      summary: Sign in to the seeded synthetic demo workspace
+      description: >-
+        Available only when DEMO_ENABLED=true. Uses the configured server-side demo password, normal CSRF and
+        rate limiting, disabled-account checks and a revocable session. No request credentials are required.
+      parameters:
+        - $ref: "#/components/parameters/CSRF"
+      responses:
+        "200":
+          description: Demo user DTO and refreshed CSRF token
+        "401":
+          description: Demo credentials invalid or member disabled
+        "403":
+          description: Missing or invalid CSRF token
+        "404":
+          description: Demo mode disabled
+        "429":
+          description: Too many login attempts
+        "503":
+          description: Demo account or server configuration unavailable
+components:
+  securitySchemes:
+    IngestionKey:
+      type: http
+      scheme: bearer
+      description: High-entropy organization ingestion key
+    Session:
+      type: apiKey
+      in: cookie
+      name: _sentinel_session
+  parameters:
+    CSRF:
+      in: header
+      name: X-CSRF-Token
+      required: true
+      schema:
+        type: string
+    ID:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Page:
+      in: query
+      name: page
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      in: query
+      name: per_page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+  schemas:
+    TransactionInput:
+      type: object
+      additionalProperties: false
+      required:
+        - account_token
+        - merchant
+        - amount
+        - currency
+        - country
+        - account_age_days
+        - velocity_hour
+        - device_trust
+        - distance_km
+        - failed_attempts
+        - new_device
+        - country_mismatch
+      properties:
+        account_token:
+          type: string
+          pattern: ^tok_[A-Za-z0-9_-]{1,124}$
+          minLength: 5
+          maxLength: 128
+        merchant:
+          type: string
+          minLength: 2
+          maxLength: 128
+        amount:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 10000000
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+        country:
+          type: string
+          pattern: ^[A-Z]{2}$
+        account_age_days:
+          type: number
+          minimum: 0
+          maximum: 36500
+        velocity_hour:
+          type: number
+          minimum: 0
+          maximum: 100000
+        device_trust:
+          type: number
+          minimum: 0
+          maximum: 1
+        distance_km:
+          type: number
+          minimum: 0
+          maximum: 41000
+        failed_attempts:
+          type: number
+          minimum: 0
+          maximum: 10000
+        new_device:
+          type: boolean
+        country_mismatch:
+          type: boolean
+    Policy:
+      type: object
+      required:
+        - name
+        - conditions
+        - severity
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        severity:
+          enum:
+            - low
+            - medium
+            - high
+            - critical
+        enabled:
+          type: boolean
+        open_case:
+          type: boolean
+        priority:
+          type: integer
+          minimum: 0
+          maximum: 100
+        conditions:
+          type: object
+          additionalProperties: false
+          minProperties: 1
+          properties:
+            risk_score_min:
+              type: number
+              minimum: 0
+              maximum: 100
+            amount_min:
+              type: number
+              minimum: 0
+              maximum: 10000000
+            velocity_hour_min:
+              type: number
+              minimum: 0
+              maximum: 100000
+            new_device:
+              type: boolean
+            country_mismatch:
+              type: boolean

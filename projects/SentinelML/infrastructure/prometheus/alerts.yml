@@ -1,0 +1,32 @@
+groups:
+  - name: sentinelml
+    rules:
+      - alert: SentinelServiceUnavailable
+        expr: up{job=~"ingestion|inference|control"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: "SentinelML service cannot be scraped"}
+      - alert: SentinelInferenceLatency
+        expr: histogram_quantile(0.95, sum by (le) (rate(sentinel_inference_duration_seconds_bucket[5m]))) > 0.25
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Inference p95 exceeds 250 ms"}
+      - alert: SentinelConsumerLag
+        expr: sentinel_kafka_consumer_lag > 1000
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Inference consumer is behind the broker"}
+      - alert: SentinelPublishFailures
+        expr: increase(sentinel_outbox_publish_failures_total[5m]) > 0
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: "Ingestion outbox is retrying failed publications"}
+      - alert: SentinelControlBacklog
+        expr: sentinel_control_outbox_pending > 500
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Control event publisher has accumulated a backlog"}
+      - alert: SentinelConsumptionFailures
+        expr: increase(sentinel_event_consumption_failures_total[5m]) > 0
+        labels: {severity: warning}
+        annotations: {summary: "Control plane retried or dead-lettered a message"}
