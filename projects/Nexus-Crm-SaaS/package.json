@@ -1,0 +1,68 @@
+{
+  "name": "nexus-crm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A multi-tenant CRM with Next.js, NestJS, and PostgreSQL",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.9.0",
+    "npm": ">=11.21.1"
+  },
+  "packageManager": "npm@11.21.1",
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"npm run dev -w @nexus/api\" \"npm run dev -w @nexus/web\"",
+    "build": "npm run build -w @nexus/shared && npm run build -w @nexus/api && npm run build -w @nexus/web",
+    "start": "concurrently -k -n api,web \"npm run start -w @nexus/api\" \"npm run start -w @nexus/web\"",
+    "lint": "eslint apps packages --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type-check": "npm run type-check --workspaces --if-present",
+    "test": "npm run test -w @nexus/api",
+    "test:integration": "node scripts/test-integration.mjs",
+    "test:web": "node --experimental-transform-types --test tests/web/*.test.ts",
+    "test:e2e": "playwright test",
+    "db:generate": "npm run db:generate -w @nexus/api",
+    "db:migrate": "npm run db:migrate -w @nexus/api",
+    "db:seed": "npm run db:seed -w @nexus/api",
+    "db:studio": "npm run db:studio -w @nexus/api",
+    "db:local": "node scripts/local-postgres.mjs",
+    "setup:env": "node scripts/setup-env.mjs"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.0",
+    "js-yaml@5.3.0": "5.4.1"
+  },
+  "allowScripts": {
+    "@embedded-postgres/darwin-arm64@17.10.0-beta.17": true,
+    "@embedded-postgres/darwin-x64@17.10.0-beta.17": true,
+    "@embedded-postgres/linux-arm@17.10.0-beta.17": true,
+    "@embedded-postgres/linux-arm64@17.10.0-beta.17": true,
+    "@embedded-postgres/linux-ia32@17.10.0-beta.17": true,
+    "@embedded-postgres/linux-ppc64@17.10.0-beta.17": true,
+    "@embedded-postgres/linux-x64@17.10.0-beta.17": true,
+    "@embedded-postgres/windows-x64@17.10.0-beta.17": true,
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "prisma@6.19.3": true,
+    "esbuild@0.28.2": true,
+    "unrs-resolver@1.12.2": true,
+    "@scarf/scarf": false
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^24.0.0",
+    "concurrently": "^9.2.1",
+    "dotenv": "^17.2.3",
+    "embedded-postgres": "17.10.0-beta.17",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "^16.0.0",
+    "next": "^16.0.0",
+    "prettier": "^3.6.2",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.0"
+  }
+}
