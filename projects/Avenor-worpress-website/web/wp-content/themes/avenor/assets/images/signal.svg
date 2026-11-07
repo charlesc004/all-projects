@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="760" viewBox="0 0 820 760" fill="none">
+  <defs>
+    <linearGradient id="face" x1="250" y1="160" x2="630" y2="600" gradientUnits="userSpaceOnUse"><stop stop-color="#EDFF9A"/><stop offset=".55" stop-color="#D2F65A"/><stop offset="1" stop-color="#7B9C21"/></linearGradient>
+    <linearGradient id="side" x1="310" y1="260" x2="600" y2="660" gradientUnits="userSpaceOnUse"><stop stop-color="#91AF39"/><stop offset="1" stop-color="#34480F"/></linearGradient>
+    <radialGradient id="halo"><stop stop-color="#D2F65A" stop-opacity=".12"/><stop offset="1" stop-color="#101113" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="46" height="46" patternUnits="userSpaceOnUse"><path d="M46 0H0V46" stroke="#34363A" stroke-opacity=".45" stroke-width=".6"/></pattern>
+  </defs>
+  <path fill="url(#grid)" d="M0 0h820v760H0z"/>
+  <ellipse cx="430" cy="406" rx="370" ry="345" fill="url(#halo)"/>
+  <g stroke="#555B4B" stroke-width=".7">
+    <ellipse cx="410" cy="399" rx="350" ry="174" transform="rotate(-26 410 399)"/>
+    <ellipse cx="410" cy="399" rx="308" ry="307" stroke-dasharray="2 9"/>
+    <path d="M51 399h718M410 40v718" stroke-dasharray="3 8"/>
+  </g>
+  <path d="M211 251 454 111 671 237 428 378Z" fill="#1D2217" stroke="#6B7F37"/>
+  <path d="M211 251v288l217 126V378Z" fill="#151B10" stroke="#4A5B28"/>
+  <path d="m428 378 243-141v288L428 665Z" fill="#202A14" stroke="#566C28"/>
+  <path d="m258 275 195-113 170 99-195 113Z" fill="url(#face)"/>
+  <path d="m258 275 170 99v62L258 337Z" fill="url(#side)"/>
+  <path d="m428 374 195-113v62L428 436Z" fill="#A8CE3C"/>
+  <path d="m258 379 195-113 170 99-195 113Z" fill="url(#face)"/>
+  <path d="m258 379 170 99v62L258 441Z" fill="url(#side)"/>
+  <path d="m428 478 195-113v62L428 540Z" fill="#A8CE3C"/>
+  <path d="m258 483 195-113 170 99-195 113Z" fill="url(#face)"/>
+  <path d="m258 483 170 99v62L258 545Z" fill="url(#side)"/>
+  <path d="m428 582 195-113v62L428 644Z" fill="#A8CE3C"/>
+  <g stroke="#F2F1EA" stroke-opacity=".5"><path d="m258 275 170 99 195-113M258 379l170 99 195-113M258 483l170 99 195-113"/></g>
+  <g stroke="#D2F65A"><circle cx="454" cy="111" r="5" fill="#D2F65A"/><path d="M454 111 548 57h108M623 365h97v-35M258 483l-93 54H76"/><path d="M54 59h18m-9-9v18M739 694h18m-9-9v18"/></g>
+  <g fill="#A3A5A9" font-family="monospace" font-size="11" letter-spacing="2"><text x="557" y="44">01 / STRATEGY</text><text x="652" y="316">02 / DESIGN</text><text x="42" y="561">03 / ENGINEERING</text><text x="49" y="710">A / CONNECTED SYSTEM</text><text x="648" y="710">AV — 001</text></g>
+  <circle cx="99" cy="482" r="4" fill="#C1B3FA"/>
+</svg>

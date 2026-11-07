@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<ruleset name="AVENOR">
+  <description>WordPress core formatting and security conventions.</description>
+  <file>web/wp-content/themes/avenor</file>
+  <file>web/wp-content/plugins/avenor-core</file>
+  <file>tools/seed.php</file>
+  <file>tools/signal-redesign.php</file>
+  <file>tools/seed</file>
+  <exclude-pattern>*/build/*</exclude-pattern>
+  <arg name="extensions" value="php"/>
+  <arg name="parallel" value="1"/>
+  <rule ref="WordPress-Core">
+    <!-- The brief explicitly requires namespaced PascalCase class files and autoloading. -->
+    <exclude name="WordPress.Files.FileName"/>
+  </rule>
+  <config name="minimum_supported_wp_version" value="6.6"/>
+</ruleset>

@@ -1,0 +1,22 @@
+{
+  "editor": [
+    "foundation/system.css",
+    "components/shell.css",
+    "layouts/signal.css",
+    "components/catalog.css",
+    "layouts/pages.css",
+    "components/inquiry.css",
+    "responsive/signal.css"
+  ],
+  "frontend": [
+    "foundation/system.css",
+    "components/shell.css",
+    "layouts/signal.css",
+    "components/catalog.css",
+    "layouts/pages.css",
+    "components/inquiry.css",
+    "responsive/signal.css",
+    "interactions/signal-motion.css",
+    "interactions/signal-menu.css"
+  ]
+}

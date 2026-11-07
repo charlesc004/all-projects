@@ -1,0 +1,11 @@
+{
+  "@avenor/animation": { "file": "js/shared/animation.js", "dependencies": [] },
+  "@avenor/media": { "file": "js/shared/media.js", "dependencies": [] },
+  "@avenor/headline": { "file": "js/motion/headline.js", "dependencies": [] },
+  "@avenor/reveals": { "file": "js/motion/reveals.js", "dependencies": ["@avenor/animation", "@avenor/headline"] },
+  "@avenor/scroll": { "file": "js/motion/scroll.js", "dependencies": [] },
+  "@avenor/pointer": { "file": "js/motion/pointer.js", "dependencies": [] },
+  "@avenor/menu-icon": { "file": "js/navigation/icon.js", "dependencies": [] },
+  "avenor-motion": { "file": "js/motion/index.js", "dependencies": ["@avenor/media", "@avenor/reveals", "@avenor/scroll", "@avenor/pointer"], "entry": true },
+  "avenor-navigation": { "file": "js/navigation/index.js", "dependencies": ["@avenor/animation", "@avenor/media", "@avenor/menu-icon"], "entry": true }
+}

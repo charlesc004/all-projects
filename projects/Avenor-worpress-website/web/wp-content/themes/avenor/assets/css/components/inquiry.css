@@ -1,0 +1,32 @@
+/* A project brief with explicit labels and progressive submission. */
+.contact-layout { display: grid; grid-template-columns: .9fr 1.1fr; gap: 9%; padding-block: 64px 88px; }
+.contact-layout > * { margin: 0; min-width: 0; }
+.contact-intro h1 { font-size: clamp(80px, 9vw, 132px); letter-spacing: -.075em; line-height: .9; margin: 34px 0; }
+.contact-intro > p:not(.eyebrow) { max-width: 340px; color: var(--wp--preset--color--muted); font-size: 15px; }
+.contact-intro .business-profile { margin-top: 38px; border-top: 1px solid var(--avenor-border); padding-top: 22px; }
+.contact-intro .business-profile > a { margin-block: 10px; font-size: 20px; letter-spacing: -.025em; }
+.contact-next { margin-top: 34px; }
+.contact-next > p:not(.eyebrow) { font: 11px/1.7 var(--avenor-mono); color: var(--wp--preset--color--muted); margin-block: 8px; }
+.contact-form-panel { padding: 28px; background: var(--wp--preset--color--soft); border: 1px solid var(--avenor-border); }
+.contact-form-panel > .eyebrow { margin: 0 0 28px; }
+.avenor-contact-form label { display: block; font-size: 12px; margin-bottom: 22px; }
+.avenor-contact-form label > span { color: var(--wp--preset--color--muted); font-size: 10px; }
+.avenor-contact-form :is(input:not([type=checkbox]), textarea, select) {
+  display: block; width: 100%; min-height: 48px; padding: 13px 12px;
+  border: 1px solid var(--avenor-border); border-radius: 0; margin-top: 10px;
+  color: var(--wp--preset--color--ink); background: var(--wp--preset--color--paper); font-size: 12px;
+}
+.avenor-contact-form :is(input, textarea, select):focus-visible { outline-offset: 2px; }
+.avenor-contact-form :is(input, textarea)::placeholder { color: var(--wp--preset--color--muted); opacity: .8; }
+.avenor-contact-form textarea { resize: vertical; min-height: 140px; }
+.form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.avenor-contact-form .privacy-check { display: flex; align-items: flex-start; gap: 10px; margin-block: 8px 24px; line-height: 1.6; }
+.privacy-check input { width: 16px; height: 16px; margin: 2px 0 0; flex-shrink: 0; accent-color: var(--wp--preset--color--accent); }
+.avenor-contact-form .privacy-check span { font-size: 11px; }
+.avenor-contact-form button { width: 100%; padding: 15px 18px; }
+.avenor-contact-form button:disabled { cursor: wait; opacity: .6; }
+.form-status { margin-bottom: 0; font-size: 12px; }
+.form-status:empty { display: none; }
+.form-status[data-state=error] { color: #FFB3A4; }
+.form-status[data-state=success] { color: var(--wp--preset--color--accent); }
+.honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

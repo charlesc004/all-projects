@@ -1,0 +1,9 @@
+node_modules/
+vendor/
+.env
+.runtime/
+artifacts/
+test-results/
+playwright-report/
+web/wp-content/uploads/
+*.log

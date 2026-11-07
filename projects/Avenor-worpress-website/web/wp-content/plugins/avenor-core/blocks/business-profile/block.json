@@ -1,0 +1,14 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "avenor/business-profile",
+  "title": "Business profile",
+  "category": "widgets",
+  "icon": "layout",
+  "description": "Business profile from AVENOR business content.",
+  "textdomain": "avenor-core",
+  "supports": {
+    "html": false
+  },
+  "render": "file:./render.php"
+}

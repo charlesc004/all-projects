@@ -1,0 +1,25 @@
+{
+  "name": "avenor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AVENOR WordPress block theme and business companion plugin",
+  "scripts": {
+    "dev": "node tools/playground.mjs",
+    "build": "wp-scripts build --webpack-src-dir=web/wp-content/plugins/avenor-core/blocks --output-path=web/wp-content/plugins/avenor-core/build && npm run build:styles",
+    "lint:js": "wp-scripts lint-js web/wp-content/plugins/avenor-core/blocks web/wp-content/plugins/avenor-core/assets/js web/wp-content/themes/avenor/assets/js",
+    "test": "node tools/reset-preview-limits.mjs --cleanup && playwright test",
+    "test:php": "node tools/php-check.mjs",
+    "prepare:php-tests": "node tools/prepare-php-tests.mjs",
+    "build:styles": "node tools/build-styles.mjs",
+    "check:architecture": "node tools/check-architecture.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@wordpress/scripts": "35.0.0",
+    "@wp-playground/cli": "3.1.60",
+    "cssnano": "8.0.10",
+    "node": "24.18.0",
+    "postcss": "8.5.31",
+    "typescript": "5.7.3"
+  }
+}
