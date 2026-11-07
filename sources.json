@@ -1,0 +1,114 @@
+{
+  "imported_at": "2026-11-07T17:44:38.852450+00:00",
+  "account": "charlesc004",
+  "projects": [
+    {
+      "name": "agentcore-ai",
+      "source": "https://github.com/charlesc004/agentcore-ai",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": "d16d8d9fee82eca1f8d9dae7d01bfb50b15327e4",
+      "path": "projects/agentcore-ai",
+      "empty": false
+    },
+    {
+      "name": "Avenor-worpress-website",
+      "source": "https://github.com/charlesc004/Avenor-worpress-website",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": "ff94917252cc876882a50460d307bd230cf3a735",
+      "path": "projects/Avenor-worpress-website",
+      "empty": false
+    },
+    {
+      "name": "Delusion",
+      "source": "https://github.com/charlesc004/Delusion",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": null,
+      "path": "projects/Delusion",
+      "empty": true
+    },
+    {
+      "name": "f-society",
+      "source": "https://github.com/charlesc004/f-society",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": "221451ca143e4e503a49faa494b48d6e9584ac77",
+      "path": "projects/f-society",
+      "empty": false
+    },
+    {
+      "name": "Nexus-Crm-SaaS",
+      "source": "https://github.com/charlesc004/Nexus-Crm-SaaS",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": "fd8066f6857be1233c9da89f0fc8bf43477d2e52",
+      "path": "projects/Nexus-Crm-SaaS",
+      "empty": false
+    },
+    {
+      "name": "Prism-BI-platform",
+      "source": "https://github.com/charlesc004/Prism-BI-platform",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": "9c98f81eed78390a85380e1500b8f8226ad0594c",
+      "path": "projects/Prism-BI-platform",
+      "empty": false
+    },
+    {
+      "name": "SentinelML",
+      "source": "https://github.com/charlesc004/SentinelML",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": "a2a7ac985838ec71463098e7e1b6e06bdca5f0aa",
+      "path": "projects/SentinelML",
+      "empty": false
+    },
+    {
+      "name": "sereno-booking-platform",
+      "source": "https://github.com/charlesc004/sereno-booking-platform",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": "a266dfdaef9f78790ab2adae5a23458e50d58e34",
+      "path": "projects/sereno-booking-platform",
+      "empty": false
+    },
+    {
+      "name": "synqra-ai",
+      "source": "https://github.com/charlesc004/synqra-ai",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": "6e5f9996840965e42bf467d5422a2c7087ac92b3",
+      "path": "projects/synqra-ai",
+      "empty": false
+    },
+    {
+      "name": "Tickora-helpdesk",
+      "source": "https://github.com/charlesc004/Tickora-helpdesk",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": "1fe52674c5e8f5cb480e0a428a1ec6e16dcc2d5f",
+      "path": "projects/Tickora-helpdesk",
+      "empty": false
+    },
+    {
+      "name": "Tickora-helpdesk-platform",
+      "source": "https://github.com/charlesc004/Tickora-helpdesk-platform",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": null,
+      "path": "projects/Tickora-helpdesk-platform",
+      "empty": true
+    },
+    {
+      "name": "Velora-e-commerce-platform",
+      "source": "https://github.com/charlesc004/Velora-e-commerce-platform",
+      "private": false,
+      "default_branch": "main",
+      "source_commit": "2173c6be976a4a0485c26e9d54e2aae7c230c38e",
+      "path": "projects/Velora-e-commerce-platform",
+      "empty": false
+    }
+  ]
+}
