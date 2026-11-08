@@ -1,5 +1,0 @@
-apps/web/src/lib/api/types.generated.ts
-apps/api/openapi.json
-package-lock.json
-.local/
-.venv/

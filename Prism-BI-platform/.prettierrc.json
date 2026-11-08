@@ -1,5 +1,0 @@
-{
-  "overrides": [
-    { "files": "apps/web/src/**/*.html", "options": { "parser": "angular" } }
-  ]
-}
