@@ -1,0 +1,26 @@
+[package]
+name = "sentinel-inference"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+axum = "0.8"
+tokio = { version = "1", features = ["full"] }
+sea-orm = { version = "1.1", default-features = false, features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-uuid", "with-json", "with-chrono"] }
+rdkafka = { version = "0.37", features = ["cmake-build"] }
+ort = { version = "=2.0.0-rc.10", default-features = false, features = ["std", "ndarray", "load-dynamic", "tracing"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+thiserror = "2"
+uuid = { version = "=1.18.1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+sha2 = "0.10"
+jsonschema = "0.29"
+prometheus = "0.14"
+
+[[bin]]
+name = "inference"
+path = "src/main.rs"

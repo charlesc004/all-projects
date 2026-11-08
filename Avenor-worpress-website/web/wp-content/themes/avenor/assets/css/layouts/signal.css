@@ -1,0 +1,35 @@
+/* The opening composition: typography and a custom three-plane signal. */
+.signal-hero { padding-top: 28px; }
+.signal-meta, .signal-bottom { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.signal-meta > *, .signal-bottom > * { margin: 0; }
+.hero-index { color: var(--wp--preset--color--muted); font-size: 10px; }
+.signal-stage { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 0; margin-top: 24px; }
+.signal-stage > * { margin-block: 0; min-width: 0; }
+.signal-copy { position: relative; z-index: 1; padding-block: 38px; }
+.hero h1 { font-size: clamp(72px, 7.95vw, 122px); line-height: .93; letter-spacing: -.08em; font-weight: 700; margin: 0; }
+.hero h1 em { white-space: nowrap; }
+.hero-description { max-width: 390px; color: var(--wp--preset--color--muted); font-size: 15px; line-height: 1.8; margin: 28px 0; }
+.signal-copy .wp-block-buttons { margin-top: 28px; }
+.hero-scroll { margin-top: 20px; font: 10px/1.5 var(--avenor-mono); }
+.hero-scroll a { color: var(--wp--preset--color--muted); text-decoration: none; }
+.hero-scroll span { margin-left: 18px; color: var(--wp--preset--color--accent); }
+.hero-visual { position: relative; }
+.hero-image { margin: 0; }
+.hero-image img { display: block; width: 100%; height: auto; transform: translateY(var(--avenor-image-shift, 0px)); }
+.hero-visual .object-caption { position: absolute; bottom: 0; right: 0; color: var(--wp--preset--color--muted); font-size: 8px; }
+.signal-bottom { padding: 22px 0 28px; border-top: 1px solid var(--avenor-border); font: 10px/1.5 var(--avenor-mono); color: var(--wp--preset--color--muted); }
+.signal-bottom .status-dot { vertical-align: 1px; }
+.capability-index { scroll-margin-top: 80px; }
+.project-intro { display: flex; justify-content: space-between; gap: 32px; margin-bottom: 24px; }
+.project-intro > * { margin: 0; }
+.project-deck { color: var(--wp--preset--color--muted); max-width: 440px; font-size: 14px; }
+.faq-section { display: grid; grid-template-columns: 1fr 1.5fr; gap: 8%; }
+.faq-section > * { margin-block: 0; }
+.faq-section h2 { margin-top: 24px; }
+.faq-list details { border-top: 1px solid var(--avenor-border); padding: 22px 0; }
+.faq-list details:last-child { border-bottom: 1px solid var(--avenor-border); }
+.faq-list summary { cursor: pointer; font-size: 18px; list-style: none; display: flex; justify-content: space-between; gap: 20px; }
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-list summary::after { content: '+'; color: var(--wp--preset--color--accent); font: 24px/1 var(--avenor-mono); }
+.faq-list details[open] summary::after { content: '−'; }
+.faq-list details p { color: var(--wp--preset--color--muted); font-size: 14px; padding-right: 32px; }

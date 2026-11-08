@@ -1,0 +1,169 @@
+name: sentinelml
+x-control-env: &control-env
+  RAILS_ENV: production
+  DATABASE_URL: postgres://control:${POSTGRES_PASSWORD:-local-sentinel-only}@postgres/sentinel_control
+  REDIS_URL: redis://redis:6379/1
+  KAFKA_BROKERS: redpanda:9092
+  SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Copy .env.example to .env and configure SECRET_KEY_BASE}
+  DEMO_ENABLED: ${DEMO_ENABLED:-true}
+  DEMO_PASSWORD: ${DEMO_PASSWORD:-LocalDemo!2026}
+  INGESTION_API_KEY: ${INGESTION_API_KEY:-synthetic-demo-key-change-me}
+  INGESTION_URL: http://ingestion:8081
+  CONTRACTS_DIR: /contracts
+  MODEL_DIR: /artifacts/v1
+  PROMETHEUS_URL: http://prometheus:9090
+  INFERENCE_URL: http://inference:8082
+  INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN in .env}
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-sentinel-only}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7.4-bookworm
+    command: [redis-server, --appendonly, "yes"]
+    volumes: [redis_data:/data]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  redpanda:
+    image: redpandadata/redpanda:v25.1.7
+    command: [redpanda, start, --smp, "1", --memory, 512M, --reserve-memory, 0M, --overprovisioned, --node-id, "0", --kafka-addr, PLAINTEXT://0.0.0.0:9092, --advertise-kafka-addr, PLAINTEXT://redpanda:9092]
+    volumes: [redpanda_data:/var/lib/redpanda/data]
+    healthcheck:
+      test: [CMD, rpk, cluster, health, --exit-when-healthy]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  topics:
+    image: redpandadata/redpanda:v25.1.7
+    entrypoint: [/bin/sh, -c]
+    command: ["rpk topic create transaction.received.v1 transaction.scored.v1 fraud.alert.created.v1 fraud.case.updated.v1 model.activated.v1 model.activated.v1.dlq transaction.received.v1.dlq transaction.scored.v1.dlq -X brokers=redpanda:9092 || rpk topic list -X brokers=redpanda:9092"]
+    depends_on:
+      redpanda: {condition: service_healthy}
+  train:
+    build: {context: ., dockerfile: ml/Dockerfile}
+    profiles: [tools]
+    volumes: [./ml/artifacts:/artifacts]
+  ingestion-migrate:
+    image: sentinelml-ingestion:latest
+    build: ./services/ingestion
+    command: [migrate]
+    environment: &ingestion-env
+      DATABASE_URL: postgres://ingestion:${POSTGRES_PASSWORD:-local-sentinel-only}@postgres/sentinel_ingestion
+      REDIS_ADDR: redis:6379
+      KAFKA_BROKERS: redpanda:9092
+      DEMO_ENABLED: ${DEMO_ENABLED:-true}
+      INGESTION_API_KEY: ${INGESTION_API_KEY:-synthetic-demo-key-change-me}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN in .env}
+    depends_on:
+      postgres: {condition: service_healthy}
+  ingestion:
+    image: sentinelml-ingestion:latest
+    build: ./services/ingestion
+    environment: *ingestion-env
+    depends_on:
+      ingestion-migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+      topics: {condition: service_completed_successfully}
+    restart: unless-stopped
+  inference-migrate:
+    image: sentinelml-inference:latest
+    build: {context: ., dockerfile: services/inference/Dockerfile}
+    command: [migrate]
+    environment: &inference-env
+      DATABASE_URL: postgres://inference:${POSTGRES_PASSWORD:-local-sentinel-only}@postgres/sentinel_inference
+      KAFKA_BROKERS: redpanda:9092
+      MODEL_DIR: /artifacts/v1
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN in .env}
+    depends_on:
+      postgres: {condition: service_healthy}
+  inference:
+    image: sentinelml-inference:latest
+    build: {context: ., dockerfile: services/inference/Dockerfile}
+    environment: *inference-env
+    volumes: [./ml/artifacts:/artifacts:ro]
+    depends_on:
+      inference-migrate: {condition: service_completed_successfully}
+      topics: {condition: service_completed_successfully}
+    restart: unless-stopped
+  control-migrate:
+    image: sentinelml-control:latest
+    build: ./services/control-plane
+    command: [bundle, exec, rails, db:migrate]
+    environment: *control-env
+    depends_on:
+      postgres: {condition: service_healthy}
+  control:
+    image: sentinelml-control:latest
+    build: ./services/control-plane
+    environment: *control-env
+    volumes: [./contracts:/contracts:ro, ./ml/artifacts:/artifacts:ro]
+    depends_on:
+      control-migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    restart: unless-stopped
+  consumer:
+    image: sentinelml-control:latest
+    build: ./services/control-plane
+    command: [bundle, exec, karafka, server]
+    environment: *control-env
+    volumes: [./contracts:/contracts:ro, ./ml/artifacts:/artifacts:ro]
+    depends_on:
+      control-migrate: {condition: service_completed_successfully}
+      topics: {condition: service_completed_successfully}
+    restart: unless-stopped
+  worker:
+    image: sentinelml-control:latest
+    build: ./services/control-plane
+    command: [bundle, exec, sidekiq, -r, ./config/environment.rb]
+    environment: *control-env
+    depends_on:
+      control-migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    restart: unless-stopped
+  outbox:
+    image: sentinelml-control:latest
+    build: ./services/control-plane
+    command: [bundle, exec, rake, sentinel:operations]
+    environment: *control-env
+    depends_on:
+      control-migrate: {condition: service_completed_successfully}
+  frontend:
+    image: sentinelml-frontend:latest
+    build: ./frontend
+    environment: {CONTROL_URL: "http://control:3001"}
+    depends_on: [control]
+    restart: unless-stopped
+  gateway:
+    image: caddy:2.10
+    ports: ["127.0.0.1:${APP_PORT:-8080}:80"]
+    volumes: [./infrastructure/caddy/Caddyfile:/etc/caddy/Caddyfile:ro]
+    depends_on: [frontend, ingestion, control]
+  prometheus:
+    image: prom/prometheus:v3.3.1
+    ports: ["127.0.0.1:9090:9090"]
+    volumes: [./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro, ./infrastructure/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro]
+  grafana:
+    image: grafana/grafana:11.6.1
+    ports: ["127.0.0.1:3002:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-local-grafana-change-me}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ./infrastructure/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infrastructure/grafana/dashboards:/var/lib/grafana/dashboards:ro
+volumes:
+  postgres_data:
+  redis_data:
+  redpanda_data:

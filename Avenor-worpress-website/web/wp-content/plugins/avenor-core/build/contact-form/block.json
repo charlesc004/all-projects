@@ -1,0 +1,14 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "avenor/contact-form",
+  "title": "Contact form",
+  "category": "widgets",
+  "icon": "layout",
+  "description": "Contact form from AVENOR business content.",
+  "textdomain": "avenor-core",
+  "supports": {
+    "html": false
+  },
+  "render": "file:./render.php"
+}

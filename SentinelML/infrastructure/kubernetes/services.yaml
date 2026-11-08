@@ -1,0 +1,967 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sentinelml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinel-config
+  namespace: sentinelml
+data:
+  KAFKA_BROKERS: kafka:9092
+  REDIS_ADDR: redis:6379
+  REDIS_URL: redis://redis:6379/1
+  RAILS_ENV: production
+  DEMO_ENABLED: 'false'
+  SECURE_COOKIES: 'true'
+  MODEL_DIR: "/artifacts/v1"
+  CONTRACTS_DIR: "/contracts"
+  INGESTION_URL: http://ingestion:8081
+  INFERENCE_URL: http://inference:8082
+  ALLOWED_HOSTS: sentinelml.example.com
+  CONTROL_URL: http://control:3001
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: validated-model-artifacts
+  namespace: sentinelml
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sentinel-backups
+  namespace: sentinelml
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinel-gateway
+  namespace: sentinelml
+data:
+  Caddyfile: |
+    :8080 {
+      header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy same-origin
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'"
+      }
+      handle /api/* {
+        reverse_proxy control:3001
+      }
+      handle_path /ingest/* {
+        reverse_proxy ingestion:8081
+      }
+      handle {
+        reverse_proxy frontend:3000
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestion
+  namespace: sentinelml
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ingestion
+  template:
+    metadata:
+      labels:
+        app: ingestion
+        part-of: sentinelml
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      containers:
+      - name: ingestion
+        image: sentinelml/ingestion:0.1.0
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: '2'
+            memory: 1Gi
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        - secretRef:
+            name: ingestion-secrets
+        ports:
+        - containerPort: 8081
+        startupProbe:
+          httpGet:
+            path: "/health"
+            port: 8081
+          failureThreshold: 30
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: "/health"
+            port: 8081
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: "/ready"
+            port: 8081
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingestion
+  namespace: sentinelml
+spec:
+  selector:
+    app: ingestion
+  ports:
+  - port: 8081
+    targetPort: 8081
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ingestion
+  namespace: sentinelml
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: ingestion
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference
+  namespace: sentinelml
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: inference
+  template:
+    metadata:
+      labels:
+        app: inference
+        part-of: sentinelml
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      containers:
+      - name: inference
+        image: sentinelml/inference:0.1.0
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: '2'
+            memory: 1Gi
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        - secretRef:
+            name: inference-secrets
+        ports:
+        - containerPort: 8082
+        startupProbe:
+          httpGet:
+            path: "/health"
+            port: 8082
+          failureThreshold: 30
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: "/health"
+            port: 8082
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: "/ready"
+            port: 8082
+          periodSeconds: 10
+        volumeMounts:
+        - name: artifacts
+          mountPath: "/artifacts"
+          readOnly: true
+      volumes:
+      - name: artifacts
+        persistentVolumeClaim:
+          claimName: validated-model-artifacts
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inference
+  namespace: sentinelml
+spec:
+  selector:
+    app: inference
+  ports:
+  - port: 8082
+    targetPort: 8082
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: inference
+  namespace: sentinelml
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: inference
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: control
+  namespace: sentinelml
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: control
+  template:
+    metadata:
+      labels:
+        app: control
+        part-of: sentinelml
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      containers:
+      - name: control
+        image: sentinelml/control:0.1.0
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: '2'
+            memory: 1Gi
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        - secretRef:
+            name: control-secrets
+        ports:
+        - containerPort: 3001
+        startupProbe:
+          httpGet:
+            path: "/health"
+            port: 3001
+          failureThreshold: 30
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: "/health"
+            port: 3001
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: "/ready"
+            port: 3001
+          periodSeconds: 10
+        volumeMounts:
+        - name: artifacts
+          mountPath: "/artifacts"
+          readOnly: true
+        - name: contracts
+          mountPath: "/contracts/events"
+          readOnly: true
+        - name: tmp
+          mountPath: "/app/tmp"
+      volumes:
+      - name: artifacts
+        persistentVolumeClaim:
+          claimName: validated-model-artifacts
+      - name: contracts
+        configMap:
+          name: sentinel-contracts
+      - name: tmp
+        emptyDir: {}
+      securityContext:
+        fsGroup: 10001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: control
+  namespace: sentinelml
+spec:
+  selector:
+    app: control
+  ports:
+  - port: 3001
+    targetPort: 3001
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: control
+  namespace: sentinelml
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: control
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+  namespace: sentinelml
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+        part-of: sentinelml
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      containers:
+      - name: consumer
+        image: sentinelml/control:0.1.0
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: '2'
+            memory: 1Gi
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        - secretRef:
+            name: control-secrets
+        command:
+        - bundle
+        - exec
+        - karafka
+        - server
+        livenessProbe:
+          exec:
+            command:
+            - ruby
+            - "-e"
+            - Process.kill(0,1)
+          periodSeconds: 30
+        volumeMounts:
+        - name: artifacts
+          mountPath: "/artifacts"
+          readOnly: true
+        - name: contracts
+          mountPath: "/contracts/events"
+          readOnly: true
+        - name: tmp
+          mountPath: "/app/tmp"
+      volumes:
+      - name: artifacts
+        persistentVolumeClaim:
+          claimName: validated-model-artifacts
+      - name: contracts
+        configMap:
+          name: sentinel-contracts
+      - name: tmp
+        emptyDir: {}
+      securityContext:
+        fsGroup: 10001
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: consumer
+  namespace: sentinelml
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: consumer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: sentinelml
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+        part-of: sentinelml
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      containers:
+      - name: worker
+        image: sentinelml/control:0.1.0
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: '2'
+            memory: 1Gi
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        - secretRef:
+            name: control-secrets
+        command:
+        - bundle
+        - exec
+        - sidekiq
+        - "-r"
+        - "./config/environment.rb"
+        livenessProbe:
+          exec:
+            command:
+            - ruby
+            - "-e"
+            - Process.kill(0,1)
+          periodSeconds: 30
+        volumeMounts:
+        - name: artifacts
+          mountPath: "/artifacts"
+          readOnly: true
+        - name: contracts
+          mountPath: "/contracts/events"
+          readOnly: true
+        - name: tmp
+          mountPath: "/app/tmp"
+      volumes:
+      - name: artifacts
+        persistentVolumeClaim:
+          claimName: validated-model-artifacts
+      - name: contracts
+        configMap:
+          name: sentinel-contracts
+      - name: tmp
+        emptyDir: {}
+      securityContext:
+        fsGroup: 10001
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: worker
+  namespace: sentinelml
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: worker
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: outbox
+  namespace: sentinelml
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: outbox
+  template:
+    metadata:
+      labels:
+        app: outbox
+        part-of: sentinelml
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      containers:
+      - name: outbox
+        image: sentinelml/control:0.1.0
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: '2'
+            memory: 1Gi
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        - secretRef:
+            name: control-secrets
+        command:
+        - bundle
+        - exec
+        - rake
+        - sentinel:operations
+        livenessProbe:
+          exec:
+            command:
+            - ruby
+            - "-e"
+            - Process.kill(0,1)
+          periodSeconds: 30
+        volumeMounts:
+        - name: artifacts
+          mountPath: "/artifacts"
+          readOnly: true
+        - name: contracts
+          mountPath: "/contracts/events"
+          readOnly: true
+        - name: tmp
+          mountPath: "/app/tmp"
+      volumes:
+      - name: artifacts
+        persistentVolumeClaim:
+          claimName: validated-model-artifacts
+      - name: contracts
+        configMap:
+          name: sentinel-contracts
+      - name: tmp
+        emptyDir: {}
+      securityContext:
+        fsGroup: 10001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: sentinelml
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+        part-of: sentinelml
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      containers:
+      - name: frontend
+        image: sentinelml/frontend:0.1.0
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: '2'
+            memory: 1Gi
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        ports:
+        - containerPort: 3000
+        startupProbe:
+          httpGet:
+            path: "/"
+            port: 3000
+          failureThreshold: 30
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: "/"
+            port: 3000
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: "/"
+            port: 3000
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: sentinelml
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 3000
+    targetPort: 3000
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend
+  namespace: sentinelml
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: frontend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: sentinelml
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+        part-of: sentinelml
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      containers:
+      - name: gateway
+        image: caddy:2.10
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: '2'
+            memory: 1Gi
+        ports:
+        - containerPort: 8080
+        startupProbe:
+          httpGet:
+            path: "/"
+            port: 8080
+          failureThreshold: 30
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: "/"
+            port: 8080
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: "/"
+            port: 8080
+          periodSeconds: 10
+        env:
+        - name: XDG_CONFIG_HOME
+          value: "/config"
+        - name: XDG_DATA_HOME
+          value: "/data"
+        volumeMounts:
+        - name: config
+          mountPath: "/etc/caddy/Caddyfile"
+          subPath: Caddyfile
+          readOnly: true
+        - name: data
+          mountPath: "/data"
+        - name: runtime
+          mountPath: "/config"
+      volumes:
+      - name: config
+        configMap:
+          name: sentinel-gateway
+      - name: data
+        emptyDir: {}
+      - name: runtime
+        emptyDir: {}
+      securityContext:
+        fsGroup: 1000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: sentinelml
+spec:
+  selector:
+    app: gateway
+  ports:
+  - port: 80
+    targetPort: 8080
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ingestion-migrate
+  namespace: sentinelml
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: ingestion-migrate
+        part-of: sentinelml
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+      - name: migrate
+        image: sentinelml/ingestion:0.1.0
+        command:
+        - "/ingestion"
+        - migrate
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        - secretRef:
+            name: ingestion-secrets
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: inference-migrate
+  namespace: sentinelml
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: inference-migrate
+        part-of: sentinelml
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+      - name: migrate
+        image: sentinelml/inference:0.1.0
+        command:
+        - "/app/inference"
+        - migrate
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        - secretRef:
+            name: inference-secrets
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: control-migrate
+  namespace: sentinelml
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: control-migrate
+        part-of: sentinelml
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+      - name: migrate
+        image: sentinelml/control:0.1.0
+        command:
+        - bundle
+        - exec
+        - rails
+        - db:migrate
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        - secretRef:
+            name: control-secrets
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sentinelml
+  namespace: sentinelml
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - sentinelml.example.com
+    secretName: sentinelml-tls
+  rules:
+  - host: sentinelml.example.com
+    http:
+      paths:
+      - path: "/"
+        pathType: Prefix
+        backend:
+          service:
+            name: gateway
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: application-isolation
+  namespace: sentinelml
+spec:
+  podSelector:
+    matchLabels:
+      part-of: sentinelml
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          part-of: sentinelml
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+  egress:
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 3000
+    - protocol: TCP
+      port: 3001
+    - protocol: TCP
+      port: 5432
+    - protocol: TCP
+      port: 6379
+    - protocol: TCP
+      port: 8081
+    - protocol: TCP
+      port: 8082
+    - protocol: TCP
+      port: 9092
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ingestion
+  namespace: sentinelml
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ingestion
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70

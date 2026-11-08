@@ -1,0 +1,14 @@
+/* Event-driven motion. Content remains visible without JavaScript. */
+.avenor-motion-word { display: inline-block; max-width: 100%; overflow-wrap: normal; transform-origin: 0 100%; }
+.avenor-scroll-progress { position: fixed; inset: 0 0 auto; height: 2px; z-index: 80; pointer-events: none; background: var(--wp--preset--color--accent); transform: scaleX(var(--avenor-progress, 0)); transform-origin: left; }
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  .wp-block-button__link { position: relative; translate: var(--avenor-magnet-x, 0px) var(--avenor-magnet-y, 0px); transition: translate 180ms ease-out, background-color 220ms, color 220ms; }
+  .services-grid .collection-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(300px circle at var(--avenor-pointer-x, 50%) var(--avenor-pointer-y, 50%), #D2F65A0D, transparent 75%); opacity: 0; transition: opacity 250ms; pointer-events: none; }
+  .services-grid .collection-card:hover::before { opacity: 1; }
+}
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .hero-image img { transform: none; }
+}
+@media (prefers-reduced-motion: reduce), print {
+  .avenor-scroll-progress { display: none; }
+}

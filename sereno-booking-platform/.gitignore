@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.venv/
+.local/
+.env
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+outbox/
+playwright-report/
+test-results/
+
+# Local secrets, reports and downloadable screenshot archives
+.env.*
+!.env.example
+*.log
+coverage/
+.DS_Store
+Thumbs.db
+docs/screenshots/*.zip

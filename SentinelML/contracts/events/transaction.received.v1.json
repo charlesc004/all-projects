@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.sentinelml.example/events/transaction.received.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "const": "transaction.received.v1"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "organization_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "transaction_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "organization_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "account_token": {
+          "type": "string",
+          "pattern": "^tok_[A-Za-z0-9_-]{1,124}$",
+          "minLength": 5,
+          "maxLength": 128
+        },
+        "merchant": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 128
+        },
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10000000
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "account_age_days": {
+          "type": "number",
+          "minimum": 0
+        },
+        "velocity_hour": {
+          "type": "number",
+          "minimum": 0
+        },
+        "device_trust": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "distance_km": {
+          "type": "number",
+          "minimum": 0
+        },
+        "failed_attempts": {
+          "type": "number",
+          "minimum": 0
+        },
+        "new_device": {
+          "type": "boolean"
+        },
+        "country_mismatch": {
+          "type": "boolean"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "organization_id",
+        "account_token",
+        "merchant",
+        "amount",
+        "currency",
+        "country",
+        "account_age_days",
+        "velocity_hour",
+        "device_trust",
+        "distance_km",
+        "failed_attempts",
+        "new_device",
+        "country_mismatch",
+        "created_at"
+      ]
+    },
+    "trace_parent": {
+      "type": "string",
+      "pattern": "^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$"
+    }
+  },
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "organization_id",
+    "transaction_id",
+    "correlation_id",
+    "occurred_at",
+    "payload"
+  ]
+}

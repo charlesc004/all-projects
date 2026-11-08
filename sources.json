@@ -10,7 +10,8 @@
       "source_commit": "d16d8d9fee82eca1f8d9dae7d01bfb50b15327e4",
       "empty": false,
       "branch": "agentcore-ai",
-      "branch_commit": "d16d8d9fee82eca1f8d9dae7d01bfb50b15327e4"
+      "branch_commit": "d16d8d9fee82eca1f8d9dae7d01bfb50b15327e4",
+      "path": "agentcore-ai"
     },
     {
       "name": "Avenor-worpress-website",
@@ -20,7 +21,8 @@
       "source_commit": "ff94917252cc876882a50460d307bd230cf3a735",
       "empty": false,
       "branch": "Avenor-worpress-website",
-      "branch_commit": "ff94917252cc876882a50460d307bd230cf3a735"
+      "branch_commit": "ff94917252cc876882a50460d307bd230cf3a735",
+      "path": "Avenor-worpress-website"
     },
     {
       "name": "Delusion",
@@ -30,7 +32,8 @@
       "source_commit": null,
       "empty": true,
       "branch": "Delusion",
-      "branch_commit": "8f2b6bcbf437125deb62279c1f6a1677b1ef3c33"
+      "branch_commit": "8f2b6bcbf437125deb62279c1f6a1677b1ef3c33",
+      "path": "Delusion"
     },
     {
       "name": "f-society",
@@ -40,7 +43,8 @@
       "source_commit": "221451ca143e4e503a49faa494b48d6e9584ac77",
       "empty": false,
       "branch": "f-society",
-      "branch_commit": "221451ca143e4e503a49faa494b48d6e9584ac77"
+      "branch_commit": "221451ca143e4e503a49faa494b48d6e9584ac77",
+      "path": "f-society"
     },
     {
       "name": "Nexus-Crm-SaaS",
@@ -50,7 +54,8 @@
       "source_commit": "fd8066f6857be1233c9da89f0fc8bf43477d2e52",
       "empty": false,
       "branch": "Nexus-Crm-SaaS",
-      "branch_commit": "fd8066f6857be1233c9da89f0fc8bf43477d2e52"
+      "branch_commit": "fd8066f6857be1233c9da89f0fc8bf43477d2e52",
+      "path": "Nexus-Crm-SaaS"
     },
     {
       "name": "Prism-BI-platform",
@@ -60,7 +65,8 @@
       "source_commit": "9c98f81eed78390a85380e1500b8f8226ad0594c",
       "empty": false,
       "branch": "Prism-BI-platform",
-      "branch_commit": "9c98f81eed78390a85380e1500b8f8226ad0594c"
+      "branch_commit": "9c98f81eed78390a85380e1500b8f8226ad0594c",
+      "path": "Prism-BI-platform"
     },
     {
       "name": "SentinelML",
@@ -70,7 +76,8 @@
       "source_commit": "a2a7ac985838ec71463098e7e1b6e06bdca5f0aa",
       "empty": false,
       "branch": "SentinelML",
-      "branch_commit": "a2a7ac985838ec71463098e7e1b6e06bdca5f0aa"
+      "branch_commit": "a2a7ac985838ec71463098e7e1b6e06bdca5f0aa",
+      "path": "SentinelML"
     },
     {
       "name": "sereno-booking-platform",
@@ -80,7 +87,8 @@
       "source_commit": "a266dfdaef9f78790ab2adae5a23458e50d58e34",
       "empty": false,
       "branch": "sereno-booking-platform",
-      "branch_commit": "a266dfdaef9f78790ab2adae5a23458e50d58e34"
+      "branch_commit": "a266dfdaef9f78790ab2adae5a23458e50d58e34",
+      "path": "sereno-booking-platform"
     },
     {
       "name": "synqra-ai",
@@ -90,7 +98,8 @@
       "source_commit": "6e5f9996840965e42bf467d5422a2c7087ac92b3",
       "empty": false,
       "branch": "synqra-ai",
-      "branch_commit": "6e5f9996840965e42bf467d5422a2c7087ac92b3"
+      "branch_commit": "6e5f9996840965e42bf467d5422a2c7087ac92b3",
+      "path": "synqra-ai"
     },
     {
       "name": "Tickora-helpdesk",
@@ -100,7 +109,8 @@
       "source_commit": "1fe52674c5e8f5cb480e0a428a1ec6e16dcc2d5f",
       "empty": false,
       "branch": "Tickora-helpdesk",
-      "branch_commit": "1fe52674c5e8f5cb480e0a428a1ec6e16dcc2d5f"
+      "branch_commit": "1fe52674c5e8f5cb480e0a428a1ec6e16dcc2d5f",
+      "path": "Tickora-helpdesk"
     },
     {
       "name": "Tickora-helpdesk-platform",
@@ -110,7 +120,8 @@
       "source_commit": null,
       "empty": true,
       "branch": "Tickora-helpdesk-platform",
-      "branch_commit": "e03ee35753cdc190f44f2e997d577ee076dc9e08"
+      "branch_commit": "e03ee35753cdc190f44f2e997d577ee076dc9e08",
+      "path": "Tickora-helpdesk-platform"
     },
     {
       "name": "Velora-e-commerce-platform",
@@ -120,9 +131,10 @@
       "source_commit": "2173c6be976a4a0485c26e9d54e2aae7c230c38e",
       "empty": false,
       "branch": "Velora-e-commerce-platform",
-      "branch_commit": "2173c6be976a4a0485c26e9d54e2aae7c230c38e"
+      "branch_commit": "2173c6be976a4a0485c26e9d54e2aae7c230c38e",
+      "path": "Velora-e-commerce-platform"
     }
   ],
-  "layout": "one-project-per-branch",
-  "restructured_at": "2026-11-08T11:16:20.282309+00:00"
+  "layout": "one-project-per-root-folder",
+  "restructured_at": "2026-11-08T11:21:55.194338+00:00"
 }

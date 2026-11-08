@@ -1,0 +1,128 @@
+/* The layout changes deliberately at tablet and phone widths. */
+@media (min-width: 1700px) {
+  .avenor-width { width: calc(100% - 160px); }
+}
+@media (max-width: 1200px) {
+  .header-label { display: none; }
+  .site-header .wp-block-navigation__container { gap: 18px; }
+  .header-inner { gap: 22px; }
+  .capability-index .services-grid .collection-card { grid-template-columns: 70px 1.2fr 1fr; gap: 20px; }
+  .capability-index .collection-card .service-category { display: none; }
+}
+@media (max-width: 1000px) {
+  .avenor-width { width: calc(100% - 64px); }
+  .header-cta { display: none; }
+  .signal-stage { grid-template-columns: 1fr 1fr; }
+  .hero h1 { font-size: clamp(62px, 8vw, 80px); }
+  .hero-description { font-size: 14px; }
+  .hero-visual { margin-left: -32px; }
+  .hero-visual .object-caption { display: none; }
+  .process-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+  .standards-grid, .engagement-grid { grid-template-columns: 1fr; }
+  .portfolio-grid .collection-card { column-gap: 28px; padding: 22px; }
+  .portfolio-grid .eyebrow { margin-top: 0; }
+  .insights-preview .wp-block-post { grid-template-columns: 100px 1.5fr 1fr; }
+  .insights-preview .wp-block-post-title { font-size: 24px; }
+  .contact-cta .wp-block-buttons { position: static; margin-top: 32px; }
+  .contact-layout { gap: 5%; }
+  .contact-form-panel { padding: 22px; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+  .footer-links { gap: 18px; }
+  .footer-top .eyebrow { font-size: 8px; max-width: 180px; }
+}
+@media (max-width: 781px) {
+  .header-inner { min-height: 74px; }
+  .site-header .wp-block-site-title { font-size: 25px; }
+  .signal-meta { align-items: start; }
+  .signal-meta .eyebrow { font-size: 9px; }
+  .hero-index { font-size: 8px; text-align: right; max-width: 130px; }
+  .signal-stage { grid-template-columns: 1fr; }
+  .signal-copy { padding: 28px 0 0; }
+  .hero h1 { font-size: clamp(60px, 11vw, 84px); }
+  .hero-description { max-width: 400px; margin-block: 24px; }
+  .hero-visual { width: min(100%, 460px); justify-self: center; margin: 0; }
+  .hero-scroll { display: none; }
+  .signal-bottom { font-size: 8px; gap: 20px; }
+  .signal-bottom > p { max-width: 46%; }
+  .signal-bottom > p:last-child { text-align: right; }
+  .capability-index .services-grid .collection-card { grid-template-columns: 50px 1fr; column-gap: 22px; padding-block: 24px; }
+  .capability-index .service-card-top { flex-direction: column; grid-row: 1 / 3; gap: 10px; }
+  .capability-index .card-title { font-size: 30px; }
+  .capability-index .collection-card > p:not(.service-category) { grid-column: 2; margin-top: 12px; }
+  .portfolio-grid .collection-card { grid-template-columns: 1fr; }
+  .portfolio-grid .card-image { grid-row: auto; margin-bottom: 28px; }
+  .portfolio-grid .eyebrow { margin-bottom: 18px; }
+  .portfolio-grid .card-title { font-size: 34px; }
+  .insights-preview .wp-block-post { grid-template-columns: 90px 1fr; gap: 18px; }
+  .insights-preview .wp-block-post-excerpt { grid-column: 2; }
+  .faq-section { grid-template-columns: 1fr; gap: 36px; }
+  .studio-intro { grid-template-columns: 1fr; gap: 36px; }
+  .studio-intro h1 { font-size: clamp(58px, 10vw, 90px); }
+  .studio-image img { aspect-ratio: 1.6; }
+  .contact-layout { grid-template-columns: 1fr; gap: 40px; }
+  .contact-intro h1 { font-size: 100px; }
+  .form-row { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .footer-top { flex-direction: column; gap: 24px; }
+  .footer-top .eyebrow { font-size: 9px; max-width: none; }
+  .admin-bar .wp-site-blocks > header { top: 46px; }
+}
+@media (max-width: 600px) {
+  .avenor-width { width: calc(100% - 40px); }
+  .signal-hero { padding-top: 22px; }
+  .hero h1 { font-size: clamp(48px, 12vw, 72px); }
+  .hero-description { font-size: 14px; max-width: 330px; }
+  .hero-visual { width: min(100%, 360px); }
+  .signal-stage { margin-top: 0; }
+  .section-heading-row { flex-direction: column; align-items: start; gap: 24px; margin-bottom: 32px; }
+  .section h2 { font-size: 38px; }
+  .section-heading-row .eyebrow { margin-bottom: 20px; }
+  .section-link { font-size: 12px; }
+  .project-intro { flex-direction: column; gap: 14px; }
+  .project-deck { font-size: 13px; }
+  .portfolio-grid .collection-card { padding: 16px; }
+  .portfolio-grid .card-title { font-size: 28px; }
+  .insights-preview .wp-block-post { display: block; }
+  .insights-preview .wp-block-post-title { margin-block: 16px; font-size: 27px; }
+  .faq-list summary { font-size: 17px; }
+  .contact-cta { padding-block: 48px; }
+  .contact-cta .eyebrow { font-size: 9px; }
+  .contact-cta h2 { font-size: clamp(38px, 9.3vw, 56px); }
+  .page-intro { padding-block: 48px 40px; }
+  .page-intro h1 { font-size: clamp(42px, 10vw, 60px); }
+  .page-intro > p:not(.eyebrow) { margin-left: 0; font-size: 14px; }
+  .archive-intro::after { display: none; }
+  .columns-2, .columns-3 { grid-template-columns: 1fr; }
+  .services-grid .collection-card { padding: 24px; }
+  .service-card-top { margin-bottom: 36px; }
+  .collection-filters { gap: 6px; }
+  .collection-filters a { padding: 8px 10px; font-size: 10px; }
+  .card-image img { aspect-ratio: 1.3; }
+  .case-studies-grid .card-title { font-size: 28px; }
+  .case-studies-grid:not(.portfolio-grid) .collection-card { display: block; }
+  .case-studies-grid:not(.portfolio-grid) .card-image { margin-bottom: 24px; }
+  .studio-intro h1 { font-size: 54px; }
+  .expertise-grid, .partnership-grid { grid-template-columns: 1fr; }
+  .expertise-card { padding: 24px; }
+  .expertise-card h3 { font-size: 29px; }
+  .partnership-grid { gap: 24px; }
+  .process-grid { grid-template-columns: 1fr; gap: 24px; }
+  .process-step { display: grid; grid-template-columns: 44px 1fr; column-gap: 22px; }
+  .process-step .step-number { grid-row: 1 / 3; margin: 0; }
+  .process-step h3 { margin: 0 0 12px; }
+  .process-step > p:last-child { margin: 0; }
+  .contact-layout { padding-top: 32px; }
+  .contact-intro h1 { font-size: 90px; }
+  .contact-form-panel { padding: 20px; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+  .article-shell { padding-block: 40px 64px; }
+  .article-shell > .wp-block-post-title { font-size: 44px; }
+  .article-shell > .wp-block-post-excerpt { font-size: 17px; }
+  .insights-list .wp-block-post-template { grid-template-columns: 1fr; }
+  .blog .insights-list .wp-block-post-template { grid-template-columns: 1fr; }
+  .blog .insights-list .wp-block-post:first-child { display: block; }
+  .blog .insights-list .wp-block-post:first-child .wp-block-post-featured-image { margin-bottom: 24px; }
+  .footer-links { gap: 14px 22px; }
+  .footer-bottom { flex-direction: column; gap: 12px; }
+  .site-footer .wp-block-site-title { font-size: 19vw; margin-block: 28px 16px; }
+  .admin-bar .wp-site-blocks > header { top: 0; }
+}

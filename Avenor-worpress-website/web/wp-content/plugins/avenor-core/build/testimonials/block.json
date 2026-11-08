@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "avenor/testimonials",
+  "title": "Testimonials",
+  "category": "widgets",
+  "icon": "layout",
+  "description": "Testimonials from AVENOR business content.",
+  "textdomain": "avenor-core",
+  "supports": {
+    "html": false
+  },
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "default": ""
+    },
+    "category": {
+      "type": "number",
+      "default": 0
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "count": {
+      "type": "number",
+      "default": 6
+    },
+    "columns": {
+      "type": "number",
+      "default": 3
+    },
+    "related": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
