@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="tests/php/bootstrap.php" colors="true" cacheDirectory=".runtime/phpunit-cache" failOnWarning="true">
-  <testsuites><testsuite name="AVENOR WordPress integration"><directory>web/wp-content/plugins/avenor-core/tests</directory></testsuite></testsuites>
-</phpunit>

@@ -1,40 +1,46 @@
 # All Projects
 
-A single repository containing all projects from this GitHub account.
+All public projects in one repository, with a dedicated branch for each project.
 
-Each project is in its own directory under `projects/`. Open a project directory for its setup instructions, dependencies, and license.
+`main` is the project index. Each project branch contains that project at the repository root, with its original default-branch history.
 
 ## Projects
 
-| Project | Directory | Source branch |
-| --- | --- | --- |
-| agentcore-ai | [projects/agentcore-ai](projects/agentcore-ai/) | main |
-| Avenor-worpress-website | [projects/Avenor-worpress-website](projects/Avenor-worpress-website/) | main |
-| Delusion | [projects/Delusion](projects/Delusion/) | main (empty source) |
-| f-society | [projects/f-society](projects/f-society/) | main |
-| Nexus-Crm-SaaS | [projects/Nexus-Crm-SaaS](projects/Nexus-Crm-SaaS/) | main |
-| Prism-BI-platform | [projects/Prism-BI-platform](projects/Prism-BI-platform/) | main |
-| SentinelML | [projects/SentinelML](projects/SentinelML/) | main |
-| sereno-booking-platform | [projects/sereno-booking-platform](projects/sereno-booking-platform/) | main |
-| synqra-ai | [projects/synqra-ai](projects/synqra-ai/) | main |
-| Tickora-helpdesk | [projects/Tickora-helpdesk](projects/Tickora-helpdesk/) | main |
-| Tickora-helpdesk-platform | [projects/Tickora-helpdesk-platform](projects/Tickora-helpdesk-platform/) | main (empty source) |
-| Velora-e-commerce-platform | [projects/Velora-e-commerce-platform](projects/Velora-e-commerce-platform/) | main |
+| Project | Branch |
+| --- | --- |
+| agentcore-ai | [agentcore-ai](https://github.com/charlesc004/all-projects/tree/agentcore-ai) |
+| Avenor-worpress-website | [Avenor-worpress-website](https://github.com/charlesc004/all-projects/tree/Avenor-worpress-website) |
+| Delusion (empty source) | [Delusion](https://github.com/charlesc004/all-projects/tree/Delusion) |
+| f-society | [f-society](https://github.com/charlesc004/all-projects/tree/f-society) |
+| Nexus-Crm-SaaS | [Nexus-Crm-SaaS](https://github.com/charlesc004/all-projects/tree/Nexus-Crm-SaaS) |
+| Prism-BI-platform | [Prism-BI-platform](https://github.com/charlesc004/all-projects/tree/Prism-BI-platform) |
+| SentinelML | [SentinelML](https://github.com/charlesc004/all-projects/tree/SentinelML) |
+| sereno-booking-platform | [sereno-booking-platform](https://github.com/charlesc004/all-projects/tree/sereno-booking-platform) |
+| synqra-ai | [synqra-ai](https://github.com/charlesc004/all-projects/tree/synqra-ai) |
+| Tickora-helpdesk | [Tickora-helpdesk](https://github.com/charlesc004/all-projects/tree/Tickora-helpdesk) |
+| Tickora-helpdesk-platform (empty source) | [Tickora-helpdesk-platform](https://github.com/charlesc004/all-projects/tree/Tickora-helpdesk-platform) |
+| Velora-e-commerce-platform | [Velora-e-commerce-platform](https://github.com/charlesc004/all-projects/tree/Velora-e-commerce-platform) |
 
-## Import details
+## Open a project
 
-- Imported the default branch of every public owned source repository, including its reachable commit history.
-- Original repositories, branches, tags, issues, releases, and settings were left in place.
-- Source commit IDs are recorded in `sources.json`.
-- Empty source repositories have a placeholder README.
-- Only public source repositories are included.
-- Future edits to source repositories do not automatically sync here.
-- Project workflows are nested within project folders; they are not enabled as root workflows.
-
-## Updating a project
-
-Pull updates from an existing non-empty source repository with:
+Select a project in the branch selector above, or clone one branch:
 
 ```sh
-git subtree pull --prefix=projects/PROJECT https://github.com/charlesc004/PROJECT.git BRANCH
+git clone --single-branch --branch agentcore-ai https://github.com/charlesc004/all-projects.git
 ```
+
+To work on another project in the same clone:
+
+```sh
+git fetch origin PROJECT
+git switch --track origin/PROJECT
+```
+
+## Details
+
+- 12 public source repositories; private projects are excluded.
+- Each non-empty project branch starts at its original imported source commit.
+- Empty source repositories have an independent branch with a placeholder README.
+- Original repositories remain available; edits there do not automatically sync here.
+- Keep each project on its own branch rather than merging project branches into `main`.
+- Source repositories and commit IDs are recorded in `sources.json`.
